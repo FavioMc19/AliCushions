@@ -4,13 +4,14 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import lombok.Getter;
 import lombok.Setter;
+import net.nexarys.alicushions.AliCushions;
 import net.nexarys.alicushions.enums.CushionColor;
+import net.nexarys.alicushions.managers.EntityManager;
 import net.nexarys.alicushions.utils.Utils;
 import org.bukkit.Location;
-import org.bukkit.Material;
+import org.bukkit.Sound;
 import org.bukkit.entity.Interaction;
 import org.bukkit.entity.ItemDisplay;
-import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.Transformation;
 
 import java.util.*;
@@ -26,6 +27,7 @@ public class Cushion {
     private List<UUID> displaysUUID = new ArrayList<>();
     private Map<Integer, ItemDisplay> displays = new HashMap<>();
     private Interaction interaction;
+    private ItemDisplay sitDisplay;
 
     public Cushion(UUID uuid, Location baseLocation, Location location, CushionColor color, UUID owner) {
         this.uuid = uuid;
@@ -36,11 +38,13 @@ public class Cushion {
     }
 
     public void spawn() {
+        AliCushions.getInstance().getEntityManager().getCushions().put(uuid, this);
+
         double[][] offsets = {
-                { 0.25, 0.25 },
-                { 0.25, -0.25 },
-                { -0.25, -0.25 },
-                { -0.25, 0.25 }
+                { 0.2475, 0.2475 },
+                { 0.2475, -0.2475 },
+                { -0.2475, -0.2475 },
+                { -0.2475, 0.2475 }
         };
 
         for (int i = 0; i < 4; i++) {
@@ -55,8 +59,10 @@ public class Cushion {
             ItemDisplay display = location.getWorld().spawn(spawnLocation, ItemDisplay.class, entity -> {
                 entity.setItemStack(Utils.getHeadFromURLDirect(color.getHeadById(finalI)));
                 Transformation transformation = entity.getTransformation();
-                transformation.getScale().set(1, 0.5, 1);
+                transformation.getScale().set(0.99f, 0.5f, 0.99f);
                 entity.setTransformation(transformation);
+                Utils.setData(entity, EntityManager.CUSHION_KEY, uuid.toString());
+                Utils.setData(entity, "CUSHION_ID", finalI);
             });
 
             displays.put(i, display);
@@ -64,13 +70,32 @@ public class Cushion {
         }
 
         this.interaction = location.getWorld().spawn(location.clone().add(0.5, 0, 0.5), Interaction.class, entity -> {
-           entity.setInteractionHeight(0.25f);
-           entity.setInteractionWidth(1);
+            entity.setInteractionHeight(0.25f);
+            entity.setInteractionWidth(1);
+            Utils.setData(entity, EntityManager.CUSHION_KEY, uuid.toString());
+            interactionUUID = entity.getUniqueId();
         });
+
+        this.sitDisplay = location.getWorld().spawn(location.clone().add(0.5, 0.25, 0.5),  ItemDisplay.class, entity -> {
+            Utils.setData(entity, EntityManager.CUSHION_KEY, uuid.toString());
+        });
+
+        location.getWorld().playSound(location, Sound.ITEM_ARMOR_EQUIP_LEATHER, 1, 1);
+        AliCushions.getInstance().getConfigManager().saveCushion(this);
     }
 
     public void remove() {
+        if (interaction != null) {
+            interaction.remove();
+        }
 
+        if (sitDisplay != null) {
+            sitDisplay.remove();
+        }
+
+        displays.values().forEach(ItemDisplay::remove);
+
+        location.getWorld().playSound(location, Sound.ITEM_ARMOR_EQUIP_LEATHER, 1, 1);
     }
 
     public JsonObject toJson() {
@@ -81,6 +106,7 @@ public class Cushion {
         json.addProperty("color", color.name());
         json.addProperty("owner", owner.toString());
         json.addProperty("interactionUUID", interactionUUID.toString());
+        json.addProperty("sitDisplayUUID", sitDisplay.getUniqueId().toString());
 
         JsonArray displays = new JsonArray();
         for (UUID uuid : displaysUUID) {

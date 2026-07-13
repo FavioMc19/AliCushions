@@ -1,0 +1,143 @@
+white:
+  name: "&#FFFFFFCojín blanco"
+  lore:
+    - ""
+    - "&7Pon el cojín y usalo para sentarte!"
+  material: "white_dye"
+  custom_model_data: 0
+  color: "white"
+
+orange:
+  name: "&#FF8C00Cojín naranja"
+  lore:
+    - ""
+    - "&7Pon el cojín y usalo para sentarte!"
+  material: "orange_dye"
+  custom_model_data: 0
+  color: "orange"
+
+magenta:
+  name: "&#E91E9CCojín magenta"
+  lore:
+    - ""
+    - "&7Pon el cojín y usalo para sentarte!"
+  material: "magenta_dye"
+  custom_model_data: 0
+  color: "magenta"
+
+light_blue:
+  name: "&#5DC5F0Cojín celeste"
+  lore:
+    - ""
+    - "&7Pon el cojín y usalo para sentarte!"
+  material: "light_blue_dye"
+  custom_model_data: 0
+  color: "light_blue"
+
+yellow:
+  name: "&#FCE83ACojín amarillo"
+  lore:
+    - ""
+    - "&7Pon el cojín y usalo para sentarte!"
+  material: "yellow_dye"
+  custom_model_data: 0
+  color: "yellow"
+
+lime:
+  name: "&#8ADF1ECojín lima"
+  lore:
+    - ""
+    - "&7Pon el cojín y usalo para sentarte!"
+  material: "lime_dye"
+  custom_model_data: 0
+  color: "lime"
+
+pink:
+  name: "&#F9A6C9Cojín rosa"
+  lore:
+    - ""
+    - "&7Pon el cojín y usalo para sentarte!"
+  material: "pink_dye"
+  custom_model_data: 0
+  color: "pink"
+
+gray:
+  name: "&#4E4E4ECojín gris"
+  lore:
+    - ""
+    - "&7Pon el cojín y usalo para sentarte!"
+  material: "gray_dye"
+  custom_model_data: 0
+  color: "gray"
+
+light_gray:
+  name: "&#A3A3A3Cojín gris claro"
+  lore:
+    - ""
+    - "&7Pon el cojín y usalo para sentarte!"
+  material: "light_gray_dye"
+  custom_model_data: 0
+  color: "light_gray"
+
+cyan:
+  name: "&#1FADC7Cojín cian"
+  lore:
+    - ""
+    - "&7Pon el cojín y usalo para sentarte!"
+  material: "cyan_dye"
+  custom_model_data: 0
+  color: "cyan"
+
+purple:
+  name: "&#8932B8Cojín púrpura"
+  lore:
+    - ""
+    - "&7Pon el cojín y usalo para sentarte!"
+  material: "purple_dye"
+  custom_model_data: 0
+  color: "purple"
+
+blue:
+  name: "&#3C44AACojín azul"
+  lore:
+    - ""
+    - "&7Pon el cojín y usalo para sentarte!"
+  material: "blue_dye"
+  custom_model_data: 0
+  color: "blue"
+
+brown:
+  name: "&#835432Cojín marrón"
+  lore:
+    - ""
+    - "&7Pon el cojín y usalo para sentarte!"
+  material: "brown_dye"
+  custom_model_data: 0
+  color: "brown"
+
+green:
+  name: "&#5E7C16Cojín verde"
+  lore:
+    - ""
+    - "&7Pon el cojín y usalo para sentarte!"
+  material: "green_dye"
+  custom_model_data: 0
+  color: "green"
+
+red:
+  name: "&#B02E26Cojín rojo"
+  lore:
+    - ""
+    - "&7Pon el cojín y usalo para sentarte!"
+  material: "red_dye"
+  custom_model_data: 0
+  color: "red"
+
+black:
+  name: "&#1D1D21Cojín negro"
+  lore:
+    - ""
+    - "&7Pon el cojín y usalo para sentarte!"
+  material: "black_dye"
+  custom_model_data: 0
+  color: "black"

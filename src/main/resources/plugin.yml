@@ -5,3 +5,8 @@ main: net.nexarys.alicushions.AliCushions
 api-version: '1.19'
 
 authors: [ favi0ne ]
+commands:
+  alicushions:
+    usage: /<command>
+    aliases:
+      - as
