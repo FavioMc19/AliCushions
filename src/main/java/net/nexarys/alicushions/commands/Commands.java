@@ -76,6 +76,8 @@ public class Commands implements CommandExecutor, TabCompleter {
             return true;
         }
 
+        nekoItem.setTag("item_name", itemName);
+
         ItemStack item = nekoItem.getItem("CushionColor", nekoItem.getCushionColor().name());
         target.getInventory().addItem(item);
         sender.sendMessage(Utils.color("&aLe diste " + itemName + " a " + target.getName()));

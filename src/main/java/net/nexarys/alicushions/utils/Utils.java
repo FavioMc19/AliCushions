@@ -284,4 +284,14 @@ public class Utils {
         NamespacedKey namespacedKey = new NamespacedKey(AliCushions.getInstance(), "CushionColor");
         return dataContainer.get(namespacedKey, PersistentDataType.STRING);
     }
+
+    public static String getDataString(ItemStack itemStack, String key) {
+        if (itemStack == null) return null;
+        ItemMeta meta = itemStack.getItemMeta();
+        if (meta == null) return null;
+
+        PersistentDataContainer dataContainer = meta.getPersistentDataContainer();
+        NamespacedKey namespacedKey = new NamespacedKey(AliCushions.getInstance(), key);
+        return dataContainer.get(namespacedKey, PersistentDataType.STRING);
+    }
 }

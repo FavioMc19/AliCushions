@@ -4,9 +4,11 @@ import net.nexarys.alicushions.AliCushions;
 import net.nexarys.alicushions.enums.CushionColor;
 import net.nexarys.alicushions.managers.EntityManager;
 import net.nexarys.alicushions.objects.Cushion;
+import net.nexarys.alicushions.objects.NekoItem;
 import net.nexarys.alicushions.utils.Utils;
 import org.bukkit.Bukkit;
 import org.bukkit.FluidCollisionMode;
+import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
@@ -25,6 +27,7 @@ import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.util.BoundingBox;
 import org.bukkit.util.RayTraceResult;
@@ -68,9 +71,25 @@ public class PlayerListener implements Listener {
 
         UUID owner = cushion.getOwner();
 
+
         if (owner.equals(event.getDamager().getUniqueId()) || event.getDamager().isOp()) {
+            Player player = (Player) event.getDamager();
+            if (player.getGameMode() == GameMode.SPECTATOR) return;
+            Location sitLocation = cushion.getSitDisplay().getLocation().clone();
+
             plugin.getEntityManager().getCushions().remove(uuid);
             cushion.remove();
+
+            if (player.getGameMode() == GameMode.CREATIVE) {
+                return;
+            }
+
+            String itemName = Utils.getDataString(interaction, "item_name");
+            if (itemName == null) itemName = "yellow";
+
+            NekoItem nekoItem = plugin.getItemManager().getItems().get(itemName.toLowerCase());
+            ItemStack item = nekoItem.getItem("CushionColor", nekoItem.getCushionColor().name());
+            Objects.requireNonNull(sitLocation.getWorld()).dropItem(sitLocation, item);
         }
     }
 
@@ -80,7 +99,7 @@ public class PlayerListener implements Listener {
         Player player = event.getPlayer();
         Block block = event.getClickedBlock();
         ItemStack itemStack = event.getItem();
-        if (event.getAction() != Action.RIGHT_CLICK_BLOCK || block == null || itemStack == null || itemStack.getType().isAir()) return;
+        if (player.getGameMode() == GameMode.SPECTATOR || event.getAction() != Action.RIGHT_CLICK_BLOCK || block == null || itemStack == null || itemStack.getType().isAir()) return;
 
         if (!player.isSneaking() && block.getType().isInteractable()) return;
 
@@ -92,8 +111,21 @@ public class PlayerListener implements Listener {
         Location spawnLocation = getSpawnLocation(player, block, event.getBlockFace());
         if (spawnLocation == null) return;
 
+        if (player.getGameMode() != GameMode.CREATIVE) {
+            if (itemStack.getAmount() > 1) {
+                itemStack.setAmount(itemStack.getAmount() - 1);
+            } else {
+                player.getInventory().setItemInMainHand(null);
+            }
+        }
+
         Cushion cushion = new Cushion(UUID.randomUUID(), spawnLocation.getBlock().getRelative(BlockFace.DOWN).getLocation(), spawnLocation, cushionColor, player.getUniqueId());
         cushion.spawn();
+
+        String itemName = Utils.getDataString(itemStack, "item_name");
+        if (itemName == null) itemName = "yellow";
+
+        Utils.setData(cushion.getInteraction(), "item_name", itemName);
     }
 
     private Location getSpawnLocation(Player player, Block block, BlockFace face) {

@@ -44,6 +44,7 @@ public class ConfigManager {
             ConfigurationSection configSection = itemsSection.getConfigurationSection(key);
             if (configSection != null) {
                 NekoItem nekoItem = new NekoItem(plugin, configSection);
+                nekoItem.setTag("item_name", key);
                 plugin.getItemManager().getItems().put(key, nekoItem);
             }
         }
