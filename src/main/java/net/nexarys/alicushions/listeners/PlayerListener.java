@@ -22,6 +22,7 @@ import org.bukkit.event.block.Action;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -29,7 +30,9 @@ import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.util.BoundingBox;
 import org.bukkit.util.RayTraceResult;
 import org.bukkit.util.Vector;
+import org.bukkit.util.VoxelShape;
 
+import java.util.Collection;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -37,7 +40,7 @@ public class PlayerListener implements Listener {
 
     private final AliCushions plugin = AliCushions.getInstance();
 
-    @EventHandler
+    @EventHandler (ignoreCancelled = true)
     public void onPlayerInteractEntity(PlayerInteractEntityEvent event) {
         Entity entity = event.getRightClicked();
         if (!(entity instanceof Interaction interaction)) return;
@@ -55,7 +58,7 @@ public class PlayerListener implements Listener {
         display.addPassenger(event.getPlayer());
     }
 
-    @EventHandler
+    @EventHandler (ignoreCancelled = true)
     public void onEntityDamageByEntity(EntityDamageByEntityEvent event) {
         Entity entity = event.getEntity();
         if (!(entity instanceof Interaction interaction)) return;
@@ -73,6 +76,7 @@ public class PlayerListener implements Listener {
 
             plugin.getEntityManager().getCushions().remove(uuid);
             cushion.remove();
+            event.setCancelled(true);
 
             if (player.getGameMode() == GameMode.CREATIVE) {
                 return;
@@ -87,7 +91,7 @@ public class PlayerListener implements Listener {
         }
     }
 
-    @EventHandler
+    @EventHandler (ignoreCancelled = true)
     public void onPlayerInteract(PlayerInteractEvent event) {
         Player player = event.getPlayer();
         if (event.getHand() != EquipmentSlot.HAND || player.getGameMode() == GameMode.SPECTATOR) return;
@@ -116,10 +120,21 @@ public class PlayerListener implements Listener {
         Cushion cushion = new Cushion(UUID.randomUUID(), spawnLocation.getBlock().getRelative(BlockFace.DOWN).getLocation(), spawnLocation, cushionColor, player.getUniqueId());
         cushion.spawn();
 
+        event.setCancelled(true);
+
         String itemName = Utils.getDataString(itemStack, "item_name");
         if (itemName == null) itemName = "yellow";
 
         Utils.setData(cushion.getInteraction(), "item_name", itemName);
+    }
+
+    @EventHandler
+    public void onPlayerQuit(PlayerQuitEvent event) {
+        Player player = event.getPlayer();
+        Entity entity = event.getPlayer().getVehicle();
+        if (!(entity instanceof ItemDisplay display)) return;
+        if (!Utils.containsData(display, EntityManager.CUSHION_KEY, PersistentDataType.STRING)) return;
+        player.leaveVehicle();
     }
 
     private Location getSpawnLocation(Player player, Block block, BlockFace face) {
@@ -127,38 +142,23 @@ public class PlayerListener implements Listener {
             return null;
         }
 
-        BlockData blockData = block.getBlockData();
+        VoxelShape collisionShape = block.getCollisionShape();
+        Collection<BoundingBox> boundingBoxes = collisionShape.getBoundingBoxes();
 
-        if (blockData instanceof Stairs stairs) {
-            BlockFace facing = stairs.getFacing();
-            Bisected.Half half = stairs.getHalf();
-            if (half != Bisected.Half.TOP) {
-                RayTraceResult result = player.rayTraceBlocks(6, FluidCollisionMode.NEVER);
-                if (result != null) {
-                    Vector hitPosition = result.getHitPosition();
-                    double hitY = hitPosition.getY() - block.getY();
-
-                    if (facing.getOppositeFace() == face) {
-                        if (hitY >= 0.5) {
-                            Location location = block.getLocation();
-                            return new Location(location.getWorld(), location.getBlockX(), location.getY() + 0.5, location.getBlockZ());
-                        }
-                    }
-
-                    if (face == BlockFace.UP) {
-                        if (hitY < 1) {
-                            Location location = block.getLocation();
-                            return new Location(location.getWorld(), location.getBlockX(), location.getY() + 0.5, location.getBlockZ());
-                        }
-                    }
-                }
-
-            }
+        if (face == BlockFace.UP && boundingBoxes.size() == 1) {
+            Location location = block.getLocation();
+            return new Location(location.getWorld(), location.getBlockX(), getTopSurfaceY(block), location.getBlockZ());
         }
 
         if (face == BlockFace.UP) {
-            Location location = block.getLocation();
-            return new Location(location.getWorld(), location.getBlockX(), getTopSurfaceY(block), location.getBlockZ());
+            RayTraceResult result = player.rayTraceBlocks(6, FluidCollisionMode.NEVER);
+            if (result != null) {
+                Vector hitPosition = result.getHitPosition();
+                double hitY = hitPosition.getY() - block.getY();
+
+                Location location = block.getLocation();
+                return new Location(location.getWorld(), location.getBlockX(), location.getBlockY() + hitY, location.getBlockZ());
+            }
         }
 
         Block sideBlock = block.getRelative(face);

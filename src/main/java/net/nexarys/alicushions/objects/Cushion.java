@@ -100,6 +100,7 @@ public class Cushion {
         displays.values().forEach(ItemDisplay::remove);
 
         location.getWorld().playSound(location, Sound.BLOCK_POWDER_SNOW_BREAK, 0.5f, 0.9f);
+        AliCushions.getInstance().getConfigManager().removeCushion(this);
     }
 
     public boolean hasPermissions(Player player) {

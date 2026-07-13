@@ -44,7 +44,7 @@ public class ConfigManager {
             ConfigurationSection configSection = itemsSection.getConfigurationSection(key);
             if (configSection != null) {
                 NekoItem nekoItem = new NekoItem(plugin, configSection);
-                nekoItem.setTag("item_name", key);
+                nekoItem.registerRecipe();
                 plugin.getItemManager().getItems().put(key, nekoItem);
             }
         }
@@ -55,6 +55,11 @@ public class ConfigManager {
     public void saveCushion(Cushion cushion) {
         JsonObject json = cushion.toJson();
         cushions.set(cushion.getUuid().toString(), json.toString());
+        cushions.saveConfig();
+    }
+
+    public void removeCushion(Cushion cushion) {
+        cushions.set(cushion.getUuid().toString(), null);
         cushions.saveConfig();
     }
 }

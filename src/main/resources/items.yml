@@ -1,143 +1,223 @@
 white:
-  name: "&#FFFFFFCojín blanco"
+  name: "&#FFFFFFWhite Cushion"
   lore:
     - ""
-    - "&7Pon el cojín y usalo para sentarte!"
+    - "&7Place the cushion and sit on it!"
   material: "white_dye"
   custom_model_data: 0
   color: "white"
+  recipe_enabled: true
+  recipe:
+    type: "row"
+    ingredient: "white_wool"
+    amount: 1
 
 orange:
-  name: "&#FF8C00Cojín naranja"
+  name: "&#FF8C00Orange Cushion"
   lore:
     - ""
-    - "&7Pon el cojín y usalo para sentarte!"
+    - "&7Place the cushion and sit on it!"
   material: "orange_dye"
   custom_model_data: 0
   color: "orange"
+  recipe_enabled: true
+  recipe:
+    type: "row"
+    ingredient: "orange_wool"
+    amount: 1
 
 magenta:
-  name: "&#E91E9CCojín magenta"
+  name: "&#E91E9CMagenta Cushion"
   lore:
     - ""
-    - "&7Pon el cojín y usalo para sentarte!"
+    - "&7Place the cushion and sit on it!"
   material: "magenta_dye"
   custom_model_data: 0
   color: "magenta"
+  recipe_enabled: true
+  recipe:
+    type: "row"
+    ingredient: "magenta_wool"
+    amount: 1
 
 light_blue:
-  name: "&#5DC5F0Cojín celeste"
+  name: "&#5DC5F0Light Blue Cushion"
   lore:
     - ""
-    - "&7Pon el cojín y usalo para sentarte!"
+    - "&7Place the cushion and sit on it!"
   material: "light_blue_dye"
   custom_model_data: 0
   color: "light_blue"
+  recipe_enabled: true
+  recipe:
+    type: "row"
+    ingredient: "light_blue_wool"
+    amount: 1
 
 yellow:
-  name: "&#FCE83ACojín amarillo"
+  name: "&#FCE83AYellow Cushion"
   lore:
     - ""
-    - "&7Pon el cojín y usalo para sentarte!"
+    - "&7Place the cushion and sit on it!"
   material: "yellow_dye"
   custom_model_data: 0
   color: "yellow"
+  recipe_enabled: true
+  recipe:
+    type: "row"
+    ingredient: "yellow_wool"
+    amount: 1
 
 lime:
-  name: "&#8ADF1ECojín lima"
+  name: "&#8ADF1ELime Cushion"
   lore:
     - ""
-    - "&7Pon el cojín y usalo para sentarte!"
+    - "&7Place the cushion and sit on it!"
   material: "lime_dye"
   custom_model_data: 0
   color: "lime"
+  recipe_enabled: true
+  recipe:
+    type: "row"
+    ingredient: "lime_wool"
+    amount: 1
 
 pink:
-  name: "&#F9A6C9Cojín rosa"
+  name: "&#F9A6C9Pink Cushion"
   lore:
     - ""
-    - "&7Pon el cojín y usalo para sentarte!"
+    - "&7Place the cushion and sit on it!"
   material: "pink_dye"
   custom_model_data: 0
   color: "pink"
+  recipe_enabled: true
+  recipe:
+    type: "row"
+    ingredient: "pink_wool"
+    amount: 1
 
 gray:
-  name: "&#4E4E4ECojín gris"
+  name: "&#4E4E4EGray Cushion"
   lore:
     - ""
-    - "&7Pon el cojín y usalo para sentarte!"
+    - "&7Place the cushion and sit on it!"
   material: "gray_dye"
   custom_model_data: 0
   color: "gray"
+  recipe_enabled: true
+  recipe:
+    type: "row"
+    ingredient: "gray_wool"
+    amount: 1
 
 light_gray:
-  name: "&#A3A3A3Cojín gris claro"
+  name: "&#A3A3A3Light Gray Cushion"
   lore:
     - ""
-    - "&7Pon el cojín y usalo para sentarte!"
+    - "&7Place the cushion and sit on it!"
   material: "light_gray_dye"
   custom_model_data: 0
   color: "light_gray"
+  recipe_enabled: true
+  recipe:
+    type: "row"
+    ingredient: "light_gray_wool"
+    amount: 1
 
 cyan:
-  name: "&#1FADC7Cojín cian"
+  name: "&#1FADC7Cyan Cushion"
   lore:
     - ""
-    - "&7Pon el cojín y usalo para sentarte!"
+    - "&7Place the cushion and sit on it!"
   material: "cyan_dye"
   custom_model_data: 0
   color: "cyan"
+  recipe_enabled: true
+  recipe:
+    type: "row"
+    ingredient: "cyan_wool"
+    amount: 1
 
 purple:
-  name: "&#8932B8Cojín púrpura"
+  name: "&#8932B8Purple Cushion"
   lore:
     - ""
-    - "&7Pon el cojín y usalo para sentarte!"
+    - "&7Place the cushion and sit on it!"
   material: "purple_dye"
   custom_model_data: 0
   color: "purple"
+  recipe_enabled: true
+  recipe:
+    type: "row"
+    ingredient: "purple_wool"
+    amount: 1
 
 blue:
-  name: "&#3C44AACojín azul"
+  name: "&#3C44AABlue Cushion"
   lore:
     - ""
-    - "&7Pon el cojín y usalo para sentarte!"
+    - "&7Place the cushion and sit on it!"
   material: "blue_dye"
   custom_model_data: 0
   color: "blue"
+  recipe_enabled: true
+  recipe:
+    type: "row"
+    ingredient: "blue_wool"
+    amount: 1
 
 brown:
-  name: "&#835432Cojín marrón"
+  name: "&#835432Brown Cushion"
   lore:
     - ""
-    - "&7Pon el cojín y usalo para sentarte!"
+    - "&7Place the cushion and sit on it!"
   material: "brown_dye"
   custom_model_data: 0
   color: "brown"
+  recipe_enabled: true
+  recipe:
+    type: "row"
+    ingredient: "brown_wool"
+    amount: 1
 
 green:
-  name: "&#5E7C16Cojín verde"
+  name: "&#5E7C16Green Cushion"
   lore:
     - ""
-    - "&7Pon el cojín y usalo para sentarte!"
+    - "&7Place the cushion and sit on it!"
   material: "green_dye"
   custom_model_data: 0
   color: "green"
+  recipe_enabled: true
+  recipe:
+    type: "row"
+    ingredient: "green_wool"
+    amount: 1
 
 red:
-  name: "&#B02E26Cojín rojo"
+  name: "&#B02E26Red Cushion"
   lore:
     - ""
-    - "&7Pon el cojín y usalo para sentarte!"
+    - "&7Place the cushion and sit on it!"
   material: "red_dye"
   custom_model_data: 0
   color: "red"
+  recipe_enabled: true
+  recipe:
+    type: "row"
+    ingredient: "red_wool"
+    amount: 1
 
 black:
-  name: "&#1D1D21Cojín negro"
+  name: "&#1D1D21Black Cushion"
   lore:
     - ""
-    - "&7Pon el cojín y usalo para sentarte!"
+    - "&7Place the cushion and sit on it!"
   material: "black_dye"
   custom_model_data: 0
   color: "black"
+  recipe_enabled: true
+  recipe:
+    type: "row"
+    ingredient: "black_wool"
+    amount: 1
