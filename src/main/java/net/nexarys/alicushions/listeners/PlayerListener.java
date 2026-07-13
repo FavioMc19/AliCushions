@@ -6,10 +6,7 @@ import net.nexarys.alicushions.managers.EntityManager;
 import net.nexarys.alicushions.objects.Cushion;
 import net.nexarys.alicushions.objects.NekoItem;
 import net.nexarys.alicushions.utils.Utils;
-import org.bukkit.Bukkit;
-import org.bukkit.FluidCollisionMode;
-import org.bukkit.GameMode;
-import org.bukkit.Location;
+import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.data.Bisected;
@@ -62,6 +59,7 @@ public class PlayerListener implements Listener {
     public void onEntityDamageByEntity(EntityDamageByEntityEvent event) {
         Entity entity = event.getEntity();
         if (!(entity instanceof Interaction interaction)) return;
+        if (!(event.getDamager() instanceof Player player)) return ;
         if (!Utils.containsData(interaction, EntityManager.CUSHION_KEY, PersistentDataType.STRING)) return;
 
         UUID uuid = UUID.fromString(Objects.requireNonNull(Utils.getDataString(interaction, EntityManager.CUSHION_KEY)));
@@ -69,11 +67,7 @@ public class PlayerListener implements Listener {
         Cushion cushion = plugin.getEntityManager().getCushion(uuid);
         if (cushion == null) return;
 
-        UUID owner = cushion.getOwner();
-
-
-        if (owner.equals(event.getDamager().getUniqueId()) || event.getDamager().isOp()) {
-            Player player = (Player) event.getDamager();
+        if (cushion.hasPermissions(player)) {
             if (player.getGameMode() == GameMode.SPECTATOR) return;
             Location sitLocation = cushion.getSitDisplay().getLocation().clone();
 
@@ -95,11 +89,11 @@ public class PlayerListener implements Listener {
 
     @EventHandler
     public void onPlayerInteract(PlayerInteractEvent event) {
-        if (event.getHand() != EquipmentSlot.HAND) return;
         Player player = event.getPlayer();
+        if (event.getHand() != EquipmentSlot.HAND || player.getGameMode() == GameMode.SPECTATOR) return;
         Block block = event.getClickedBlock();
         ItemStack itemStack = event.getItem();
-        if (player.getGameMode() == GameMode.SPECTATOR || event.getAction() != Action.RIGHT_CLICK_BLOCK || block == null || itemStack == null || itemStack.getType().isAir()) return;
+        if (event.getAction() != Action.RIGHT_CLICK_BLOCK || block == null || itemStack == null || itemStack.getType().isAir()) return;
 
         if (!player.isSneaking() && block.getType().isInteractable()) return;
 
@@ -133,30 +127,38 @@ public class PlayerListener implements Listener {
             return null;
         }
 
-        if (face == BlockFace.UP) {
-            Location location = block.getLocation();
-            return new Location(location.getWorld(), location.getBlockX(), getTopSurfaceY(block), location.getBlockZ());
-        }
-
         BlockData blockData = block.getBlockData();
 
         if (blockData instanceof Stairs stairs) {
             BlockFace facing = stairs.getFacing();
             Bisected.Half half = stairs.getHalf();
-            if (facing.getOppositeFace() == face) {
-                if (half != Bisected.Half.TOP) {
-                    RayTraceResult result = player.rayTraceBlocks(6, FluidCollisionMode.NEVER);
-                    if (result != null) {
-                        Vector hitPosition = result.getHitPosition();
-                        double hitY = hitPosition.getY() - block.getY();
+            if (half != Bisected.Half.TOP) {
+                RayTraceResult result = player.rayTraceBlocks(6, FluidCollisionMode.NEVER);
+                if (result != null) {
+                    Vector hitPosition = result.getHitPosition();
+                    double hitY = hitPosition.getY() - block.getY();
 
+                    if (facing.getOppositeFace() == face) {
                         if (hitY >= 0.5) {
                             Location location = block.getLocation();
                             return new Location(location.getWorld(), location.getBlockX(), location.getY() + 0.5, location.getBlockZ());
                         }
                     }
+
+                    if (face == BlockFace.UP) {
+                        if (hitY < 1) {
+                            Location location = block.getLocation();
+                            return new Location(location.getWorld(), location.getBlockX(), location.getY() + 0.5, location.getBlockZ());
+                        }
+                    }
                 }
+
             }
+        }
+
+        if (face == BlockFace.UP) {
+            Location location = block.getLocation();
+            return new Location(location.getWorld(), location.getBlockX(), getTopSurfaceY(block), location.getBlockZ());
         }
 
         Block sideBlock = block.getRelative(face);

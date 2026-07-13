@@ -12,6 +12,7 @@ import org.bukkit.Location;
 import org.bukkit.Sound;
 import org.bukkit.entity.Interaction;
 import org.bukkit.entity.ItemDisplay;
+import org.bukkit.entity.Player;
 import org.bukkit.util.Transformation;
 
 import java.util.*;
@@ -40,18 +41,21 @@ public class Cushion {
     public void spawn() {
         AliCushions.getInstance().getEntityManager().getCushions().put(uuid, this);
 
+        float shrink = 0.001f;
+        float scale = 1f - shrink;
+
         double[][] offsets = {
-                { 0.2475, 0.2475 },
-                { 0.2475, -0.2475 },
-                { -0.2475, -0.2475 },
-                { -0.2475, 0.2475 }
+                { 0.25 * scale, 0.25 * scale },
+                { 0.25 * scale, -0.25 * scale },
+                { -0.25 * scale, -0.25 * scale },
+                { -0.25 * scale, 0.25 * scale }
         };
 
         for (int i = 0; i < 4; i++) {
             double offsetX = offsets[i][0];
             double offsetZ = offsets[i][1];
 
-            Location spawnLocation = location.clone().add(offsetX, 0, offsetZ).add(.5, 0.25, .5);
+            Location spawnLocation = location.clone().add(offsetX, 0, offsetZ).add(.5, 0.249, .5);
             spawnLocation.setYaw(0);
             spawnLocation.setPitch(0);
 
@@ -59,7 +63,7 @@ public class Cushion {
             ItemDisplay display = location.getWorld().spawn(spawnLocation, ItemDisplay.class, entity -> {
                 entity.setItemStack(Utils.getHeadFromURLDirect(color.getHeadById(finalI)));
                 Transformation transformation = entity.getTransformation();
-                transformation.getScale().set(0.99f, 0.5f, 0.99f);
+                transformation.getScale().set(scale, 0.5f, scale);
                 entity.setTransformation(transformation);
                 Utils.setData(entity, EntityManager.CUSHION_KEY, uuid.toString());
                 Utils.setData(entity, "CUSHION_ID", finalI);
@@ -80,7 +84,7 @@ public class Cushion {
             Utils.setData(entity, EntityManager.CUSHION_KEY, uuid.toString());
         });
 
-        location.getWorld().playSound(location, Sound.ITEM_ARMOR_EQUIP_LEATHER, 1, 1);
+        location.getWorld().playSound(location, Sound.BLOCK_POWDER_SNOW_PLACE, 0.5f, 0.9f);
         AliCushions.getInstance().getConfigManager().saveCushion(this);
     }
 
@@ -95,7 +99,11 @@ public class Cushion {
 
         displays.values().forEach(ItemDisplay::remove);
 
-        location.getWorld().playSound(location, Sound.ITEM_ARMOR_EQUIP_LEATHER, 1, 1);
+        location.getWorld().playSound(location, Sound.BLOCK_POWDER_SNOW_BREAK, 0.5f, 0.9f);
+    }
+
+    public boolean hasPermissions(Player player) {
+        return owner.equals(player.getUniqueId()) || player.isOp() || player.hasPermission("alicushions.admin");
     }
 
     public JsonObject toJson() {
