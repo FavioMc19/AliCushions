@@ -1,5 +1,5 @@
 name: AliCushions
-version: '${version}'
+version: '1.0.1'
 
 main: net.nexarys.alicushions.AliCushions
 api-version: '1.19'

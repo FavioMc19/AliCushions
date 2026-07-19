@@ -1,6 +1,8 @@
 package net.nexarys.alicushions.enums;
 
 import lombok.Getter;
+import net.nexarys.alicushions.AliCushions;
+import net.nexarys.alicushions.objects.CushionTexture;
 import org.bukkit.DyeColor;
 
 @Getter
@@ -68,7 +70,12 @@ public enum CushionColor {
     BLACK("44df42431e74f0a455e17a4d6ada90fe9fa5c0af0dabadbe7c669510f785006"
             ,"b80351f4b512c8961f48cbd2a67fb16fd697876e1a38f5a0760418e188eec971"
             , "f214f24f1121c27694b7458a023cd32de76311cf1857ed5e0b9f89642ca30325"
-            , "66e0d5729de35d98d30f694e7fb270408dc273c8747ab474ba9b051edca60601");
+            , "66e0d5729de35d98d30f694e7fb270408dc273c8747ab474ba9b051edca60601"),
+
+    TEST("",
+    "",
+    "",
+    "");
 
     private final String head1;
     private final String head2;
@@ -87,11 +94,32 @@ public enum CushionColor {
     }
 
     public String getHeadById(int i) {
+        if (name().equalsIgnoreCase("test")) {
+            CushionTexture cushionTexture = AliCushions.getInstance().getTextureGenerator().getTextures().get("test");
+            return switch (i) {
+                case 1 -> cushionTexture.getHeads().get(0).getTextureId();
+                case 0 -> cushionTexture.getHeads().get(1).getTextureId();
+                case 3 -> cushionTexture.getHeads().get(2).getTextureId();
+                case 2 -> cushionTexture.getHeads().get(3).getTextureId();
+                default -> throw new IllegalStateException("Unexpected value: " + i);
+            };
+        }
+
         return switch (i) {
           case  1 -> head1;
           case 0 -> head2;
           case 3 -> head3;
           case 2 -> head4;
+            default -> throw new IllegalStateException("Unexpected value: " + i);
+        };
+    }
+
+    public String getUrl(int i) {
+        return switch (i) {
+            case 0 -> head1;
+            case 1 -> head2;
+            case 2 -> head3;
+            case 3 -> head4;
             default -> throw new IllegalStateException("Unexpected value: " + i);
         };
     }

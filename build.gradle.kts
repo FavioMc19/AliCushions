@@ -1,6 +1,6 @@
 plugins {
     id("java-library")
-    id("io.github.goooler.shadow") version "8.1.8"
+    id("com.gradleup.shadow") version "8.3.8"
 }
 
 repositories {
@@ -13,6 +13,8 @@ dependencies {
 
     compileOnly("org.projectlombok:lombok:1.18.34")
     annotationProcessor("org.projectlombok:lombok:1.18.34")
+    implementation("org.bstats:bstats-bukkit:3.2.1")
+    implementation("org.jsoup:jsoup:1.18.1")
 }
 
 java {
@@ -34,6 +36,8 @@ tasks {
         archiveFileName.set("${archiveBaseName.get()}.jar")
 
         destinationDirectory.set(file("D:/servers/1.21.11/plugins"))
+
+        relocate("org.jsoup", "${project.group}.shaded.jsoup")
 
         from(sourceSets.main.get().output)
     }

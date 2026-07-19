@@ -1,0 +1,2 @@
+#Send a message in the console and to admins when a new update is available
+update_checker: true

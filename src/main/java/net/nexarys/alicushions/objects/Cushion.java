@@ -5,7 +5,6 @@ import com.google.gson.JsonObject;
 import lombok.Getter;
 import lombok.Setter;
 import net.nexarys.alicushions.AliCushions;
-import net.nexarys.alicushions.enums.CushionColor;
 import net.nexarys.alicushions.managers.EntityManager;
 import net.nexarys.alicushions.utils.Utils;
 import org.bukkit.Location;
@@ -19,10 +18,11 @@ import java.util.*;
 
 @Getter @Setter
 public class Cushion {
+    private final AliCushions plugin = AliCushions.getInstance();
     private UUID uuid;
     private Location baseLocation;
     private Location location;
-    private CushionColor color;
+    private String color;
     private UUID owner;
     private UUID interactionUUID;
     private List<UUID> displaysUUID = new ArrayList<>();
@@ -30,7 +30,7 @@ public class Cushion {
     private Interaction interaction;
     private ItemDisplay sitDisplay;
 
-    public Cushion(UUID uuid, Location baseLocation, Location location, CushionColor color, UUID owner) {
+    public Cushion(UUID uuid, Location baseLocation, Location location, String color, UUID owner) {
         this.uuid = uuid;
         this.baseLocation = baseLocation;
         this.location = location;
@@ -40,6 +40,9 @@ public class Cushion {
 
     public void spawn() {
         AliCushions.getInstance().getEntityManager().getCushions().put(uuid, this);
+        CushionTexture texture = plugin.getTextureGenerator().getTextures().get(color.toLowerCase());
+
+        if (texture == null) return;
 
         float shrink = 0.001f;
         float scale = 1f - shrink;
@@ -61,7 +64,7 @@ public class Cushion {
 
             int finalI = i;
             ItemDisplay display = location.getWorld().spawn(spawnLocation, ItemDisplay.class, entity -> {
-                entity.setItemStack(Utils.getHeadFromURLDirect(color.getHeadById(finalI)));
+                entity.setItemStack(Utils.getHeadFromURLDirect(texture.getHeadById(finalI)));
                 Transformation transformation = entity.getTransformation();
                 transformation.getScale().set(scale, 0.5f, scale);
                 entity.setTransformation(transformation);
@@ -112,7 +115,7 @@ public class Cushion {
         json.addProperty("uuid", uuid.toString());
         json.add("baseLocation", Utils.locationToJson(baseLocation));
         json.add("location", Utils.locationToJson(location));
-        json.addProperty("color", color.name());
+        json.addProperty("color", color);
         json.addProperty("owner", owner.toString());
         json.addProperty("interactionUUID", interactionUUID.toString());
         json.addProperty("sitDisplayUUID", sitDisplay.getUniqueId().toString());
@@ -128,7 +131,7 @@ public class Cushion {
     public static Cushion fromJson(JsonObject json) {
         Location baseLocation = Utils.jsonToLocation(json.getAsJsonObject("baseLocation"));
         Location location = Utils.jsonToLocation(json.getAsJsonObject("location"));
-        CushionColor color = CushionColor.valueOf(json.get("color").getAsString());
+        String color = json.get("color").getAsString();
         UUID owner = UUID.fromString(json.get("owner").getAsString());
         UUID uuid = UUID.fromString(json.get("uuid").getAsString());
 

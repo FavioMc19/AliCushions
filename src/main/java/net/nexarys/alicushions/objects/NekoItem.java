@@ -3,7 +3,6 @@ package net.nexarys.alicushions.objects;
 import lombok.Getter;
 import lombok.Setter;
 import net.nexarys.alicushions.AliCushions;
-import net.nexarys.alicushions.enums.CushionColor;
 import net.nexarys.alicushions.utils.Utils;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -36,7 +35,7 @@ public class NekoItem {
     private boolean unbreakable = false;
     private final Map<String, String> tags = new HashMap<>();
     private final Map<Enchantment, Integer> enchantments = new HashMap<>();
-    private CushionColor cushionColor = CushionColor.YELLOW;
+    private String cushionColor = "yellow";
 
     private boolean recipeEnabled = false;
     private String recipeType;
@@ -62,13 +61,13 @@ public class NekoItem {
         if(config.contains("material"))
             material = Material.valueOf(Objects.requireNonNull(config.getString("material")).toUpperCase());
 
-        if(config.contains("texture") && material != null && material.equals(Material.PLAYER_HEAD))
+        if(config.contains("texture") && material.equals(Material.PLAYER_HEAD))
             head = Utils.getHeadFromURL(config.getString("texture"));
 
         if (config.contains("color")) {
-            cushionColor = CushionColor.valueOf(Objects.requireNonNull(config.getString("color")).toUpperCase());
+            cushionColor = config.getString("color").toLowerCase();
             setTag("item_name", key);
-            setTag("CushionColor", cushionColor.name());
+            setTag("CushionColor", cushionColor);
         }
 
         if (config.contains("recipe_enabled")) {
@@ -179,8 +178,8 @@ public class NekoItem {
         tags.put(key, value);
     }
 
-    public ItemStack getItem(){
-        if(itemStack != null) return itemStack.clone();
+    public ItemStack getItem() {
+//        if(itemStack != null) return itemStack.clone();
 
         ItemStack itemStack = new ItemStack(material);
 
@@ -206,7 +205,7 @@ public class NekoItem {
             meta.setUnbreakable(true);
         }
 
-        if(!tags.isEmpty()){
+        if(!tags.isEmpty()) {
             PersistentDataContainer dataContainer = meta.getPersistentDataContainer();
             for(Map.Entry<String, String> entry : tags.entrySet()){
                 dataContainer.set(new NamespacedKey(plugin, entry.getKey()), PersistentDataType.STRING, entry.getValue());

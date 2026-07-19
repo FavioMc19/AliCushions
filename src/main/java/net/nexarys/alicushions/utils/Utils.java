@@ -4,7 +4,6 @@ import com.google.gson.JsonObject;
 import lombok.NonNull;
 import net.md_5.bungee.api.chat.TextComponent;
 import net.nexarys.alicushions.AliCushions;
-import net.nexarys.alicushions.enums.CushionColor;
 import org.bukkit.*;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Entity;
@@ -68,6 +67,10 @@ public class Utils {
         meta.setOwnerProfile(profile);
         head.setItemMeta(meta);
         return head;
+    }
+
+    public static String getTextureFromURL(String url){
+        return url.substring(url.lastIndexOf('/') + 1);
     }
 
     public static ItemStack getHeadFromURLDirect(String texture){

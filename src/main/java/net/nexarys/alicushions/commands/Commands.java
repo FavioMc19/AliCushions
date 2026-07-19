@@ -1,20 +1,29 @@
 package net.nexarys.alicushions.commands;
 
 import net.nexarys.alicushions.AliCushions;
+import net.nexarys.alicushions.objects.Cushion;
+import net.nexarys.alicushions.objects.CushionTexture;
+import net.nexarys.alicushions.objects.HeadTexture;
 import net.nexarys.alicushions.objects.NekoItem;
 import net.nexarys.alicushions.utils.Utils;
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
+import org.bukkit.NamespacedKey;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.persistence.PersistentDataContainer;
+import org.bukkit.persistence.PersistentDataType;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 public class Commands implements CommandExecutor, TabCompleter {
     private final AliCushions plugin = AliCushions.getInstance();
@@ -24,6 +33,22 @@ public class Commands implements CommandExecutor, TabCompleter {
 
     @Override
     public boolean onCommand(@NonNull CommandSender sender, @NonNull Command command, @NonNull String label, String[] args) {
+
+        if (args.length == 1 && args[0].equalsIgnoreCase("test")) {
+            Player player = (Player) sender;
+            Location location = player.getLocation().getBlock().getLocation();
+            CushionTexture cushionTexture = plugin.getTextureGenerator().getTextures().get("test");
+            for (HeadTexture headTexture : cushionTexture.getHeads().values()) {
+                Bukkit.broadcastMessage(headTexture.getId()+"] generated: "+headTexture.generated());
+            }
+
+            if (!cushionTexture.isGenerated()) return true;
+
+            Cushion cushion = new Cushion(UUID.randomUUID(), location, location, "test", player.getUniqueId());
+            cushion.spawn();
+            player.sendMessage("yap");
+            return true;
+        }
 
         if (args.length == 0 || !args[0].equalsIgnoreCase("give")) {
             sender.sendMessage(Utils.color("&#7CA1FF➤ &fUsage: &7/alicushions give &8[&7player&8] &7<&fitem&7>"));
