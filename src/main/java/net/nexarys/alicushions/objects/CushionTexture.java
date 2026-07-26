@@ -24,13 +24,17 @@ public class CushionTexture {
     }
 
     public boolean isGenerated() {
+        return getGenerateProgress() == 4;
+    }
+
+    public int getGenerateProgress() {
         int count = 0;
         for (HeadTexture headTexture : heads.values()) {
             if (headTexture.generated()) {
                 count++;
             }
         }
-        return count == 4;
+        return count;
     }
 
     public void save() {

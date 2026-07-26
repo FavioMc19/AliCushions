@@ -10,6 +10,7 @@ import net.nexarys.alicushions.utils.NekoConfig;
 import net.nexarys.alicushions.utils.Utils;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.entity.Player;
 import org.mineskin.MineskinClient;
 
 import javax.imageio.ImageIO;
@@ -122,7 +123,10 @@ public class TextureGenerator {
 
                     if (cushionTexture.isGenerated()) {
                         cushionTexture.save();
+                        plugin.getConfigManager().createCushionItem(cushionTexture);
                     }
+
+                    notifyProgress(cushionTexture);
 
                     generatorNext();
                 });
@@ -139,4 +143,18 @@ public class TextureGenerator {
         }, 20 * 5);
     }
 
+    private void notifyProgress(CushionTexture cushionTexture) {
+        int done = cushionTexture.getGenerateProgress();
+        int total = 4;
+
+        String message = Utils.color("&#FF6FCF[&#FFB3EDAliCushions&#FF6FCF] &#FFD1F0Generating texture &#FF9DE2%s/%s &#FFD1F0for &#FFB3ED%s Cushion".formatted(done, total, Utils.capitalize(cushionTexture.getName())));
+
+        for (Player player : Bukkit.getOnlinePlayers()) {
+            if (player.isOp() || player.hasPermission("*")) {
+                player.sendMessage(message);
+            }
+        }
+
+        Bukkit.getConsoleSender().sendMessage(message);
+    }
 }

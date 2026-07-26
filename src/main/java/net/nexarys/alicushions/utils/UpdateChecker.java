@@ -37,7 +37,7 @@ public class UpdateChecker {
     public void sendMessage(CommandSender sender, boolean updated, String version){
         if(updated || !ConfigManager.UPDATE_CHECKER) return;
 
-        sender.sendMessage(Utils.color(String.format("&7[&d%s&7]&eA new version is available! [%s]", plugin.getDescription().getName(), version)));
-        sender.sendMessage(Utils.color("&eLink: https://www.spigotmc.org/resources/holotools-new-version."+resourceId));
+        sender.sendMessage(Utils.color(String.format("&7[&d%s&7]&e A new version is available! [%s]", plugin.getDescription().getName(), version)));
+        sender.sendMessage(Utils.color("&7[&d%s&7]&e Link: https://www.spigotmc.org/resources/new-version.%s".formatted(plugin.getDescription().getName(), resourceId)));
     }
 }
