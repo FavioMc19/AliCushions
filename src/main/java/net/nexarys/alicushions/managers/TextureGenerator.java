@@ -17,10 +17,7 @@ import org.mineskin.MineskinClient;
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Getter @Setter
 public class TextureGenerator {
@@ -45,9 +42,10 @@ public class TextureGenerator {
         if (!folder.exists()) folder.mkdir();
 
         for (CushionsPrefab prefab : CushionsPrefab.values()) {
-            File file = new File(plugin.getDataFolder() + "/cushions/%s.png".formatted(prefab.name().toLowerCase()));
+            String fileName = prefab.name().toLowerCase(Locale.ENGLISH) + ".png";
+            File file = new File(plugin.getDataFolder() + "/cushions/%s".formatted(fileName));
             if (!file.exists()) {
-                plugin.getConfigManager().saveFile("cushions", "cake.png", new File(plugin.getDataFolder(), "cushions"));
+                plugin.getConfigManager().saveFile("cushions", fileName, new File(plugin.getDataFolder(), "cushions"));
             }
         }
 
