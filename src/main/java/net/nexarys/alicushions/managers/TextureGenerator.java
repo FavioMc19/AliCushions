@@ -3,6 +3,7 @@ package net.nexarys.alicushions.managers;
 import lombok.Getter;
 import lombok.Setter;
 import net.nexarys.alicushions.AliCushions;
+import net.nexarys.alicushions.enums.CushionsPrefab;
 import net.nexarys.alicushions.objects.CushionTexture;
 import net.nexarys.alicushions.objects.HeadTexture;
 import net.nexarys.alicushions.utils.ImageUtils;
@@ -42,6 +43,13 @@ public class TextureGenerator {
     public void checkAndGenerateCushions() {
         File folder =  new File(plugin.getDataFolder() + "/cushions/");
         if (!folder.exists()) folder.mkdir();
+
+        for (CushionsPrefab prefab : CushionsPrefab.values()) {
+            File file = new File(plugin.getDataFolder() + "/cushions/%s.png".formatted(prefab.name().toLowerCase()));
+            if (!file.exists()) {
+                plugin.getConfigManager().saveFile("cushions", "cake.png", new File(plugin.getDataFolder(), "cushions"));
+            }
+        }
 
         File[] files = folder.listFiles();
 

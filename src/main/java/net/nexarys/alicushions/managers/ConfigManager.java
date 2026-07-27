@@ -141,4 +141,18 @@ public class ConfigManager {
             e.printStackTrace();
         }
     }
+
+    public void saveFile(String folderName, String fileName, File targetPath) {
+        if (!targetPath.exists()) targetPath.mkdirs();
+
+        try {
+            File outFile = new File(targetPath, fileName);
+
+            try (InputStream in = plugin.getResource(folderName + "/" + fileName)) {
+                Files.copy(in, outFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 }
