@@ -68,6 +68,23 @@ public class TextureGenerator {
                     cushionTexture.setHash(hash);
                     textures.put(name, cushionTexture);
 
+                    CushionsPrefab prefab = CushionsPrefab.getPrefab(name);
+
+                    if ((!exist || needRegenerate) && prefab != null && prefab.getHash().equals(hash)) {
+                        for (int i = 0; i < 4; i++) {
+                            HeadTexture headTexture = new HeadTexture();
+                            headTexture.setKey(name);
+                            headTexture.setId(i);
+                            headTexture.setBaseTexture(image);
+                            headTexture.setTextureId(CushionsPrefab.getPrefabTexture(prefab, i));
+                            headTexture.save();
+                            cushionTexture.getHeads().put(i, headTexture);
+                        }
+                        cushionTexture.save();
+                        plugin.getConfigManager().createCushionItem(cushionTexture);
+                        continue;
+                    }
+
                     if (!exist || needRegenerate) {
                         for (int i = 0; i < 4; i++) {
                             HeadTexture headTexture = new HeadTexture();

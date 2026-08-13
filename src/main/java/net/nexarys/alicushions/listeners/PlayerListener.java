@@ -24,10 +24,12 @@ import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.persistence.PersistentDataType;
+import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.BoundingBox;
 import org.bukkit.util.RayTraceResult;
 import org.bukkit.util.Vector;
 import org.bukkit.util.VoxelShape;
+import org.spigotmc.event.entity.EntityDismountEvent;
 
 import java.util.Collection;
 import java.util.Objects;
@@ -54,11 +56,15 @@ public class PlayerListener implements Listener {
         Cushion cushion = plugin.getEntityManager().getCushion(uuid);
         if (cushion == null) return;
 
-        ItemDisplay display = cushion.getSitDisplay();
+        if (Utils.containsData(interaction, "sit_player", PersistentDataType.STRING)) return;
 
-        if (!display.getPassengers().isEmpty()) return;
-
-        display.addPassenger(event.getPlayer());
+        Player player = event.getPlayer();
+        ItemDisplay sitDisplay = cushion.getLocation().getWorld().spawn(
+                cushion.getLocation().clone().add(0.5, 0.25, 0.5), ItemDisplay.class, e ->
+                        Utils.setData(e, EntityManager.CUSHION_KEY, uuid.toString())
+        );
+        sitDisplay.addPassenger(player);
+        Utils.setData(interaction, "sit_player", sitDisplay.getUniqueId().toString());
     }
 
     @EventHandler (ignoreCancelled = true)
@@ -75,7 +81,14 @@ public class PlayerListener implements Listener {
 
         if (cushion.hasPermissions(player)) {
             if (player.getGameMode() == GameMode.SPECTATOR) return;
-            Location sitLocation = cushion.getSitDisplay().getLocation().clone();
+            Location sitLocation = cushion.getLocation().clone().add(0.5, 0.25, 0.5);
+
+            String sitUuidStr = Utils.getDataString(interaction, "sit_player");
+            if (sitUuidStr != null) {
+                Entity sit = Bukkit.getEntity(UUID.fromString(sitUuidStr));
+                if (sit != null) sit.remove();
+                Utils.removeData(interaction, "sit_player");
+            }
 
             plugin.getEntityManager().getCushions().remove(uuid);
             cushion.remove();
@@ -132,7 +145,7 @@ public class PlayerListener implements Listener {
             }
         }
 
-        cushion.spawn();
+        cushion.spawn(player);
 
         event.setCancelled(true);
 
@@ -145,10 +158,40 @@ public class PlayerListener implements Listener {
     @EventHandler
     public void onPlayerQuit(PlayerQuitEvent event) {
         Player player = event.getPlayer();
-        Entity entity = event.getPlayer().getVehicle();
-        if (!(entity instanceof ItemDisplay display)) return;
-        if (!Utils.containsData(display, EntityManager.CUSHION_KEY, PersistentDataType.STRING)) return;
+        Entity vehicle = player.getVehicle();
+        if (!(vehicle instanceof ItemDisplay sitDisplay)) return;
+        if (!Utils.containsData(sitDisplay, EntityManager.CUSHION_KEY, PersistentDataType.STRING)) return;
+
+        String cushionUuidStr = Utils.getDataString(sitDisplay, EntityManager.CUSHION_KEY);
+        if (cushionUuidStr == null) return;
+
+        Cushion cushion = plugin.getEntityManager().getCushion(UUID.fromString(cushionUuidStr));
         player.leaveVehicle();
+        sitDisplay.remove();
+        if (cushion != null) {
+            Utils.removeData(cushion.getInteraction(), "sit_player");
+        }
+    }
+
+    @EventHandler
+    public void onDismount(EntityDismountEvent event) {
+        Entity vehicle = event.getDismounted();
+        if (!(vehicle instanceof ItemDisplay sitDisplay)) return;
+        if (!Utils.containsData(sitDisplay, EntityManager.CUSHION_KEY, PersistentDataType.STRING)) return;
+
+        String cushionUuidStr = Utils.getDataString(sitDisplay, EntityManager.CUSHION_KEY);
+        if (cushionUuidStr == null) return;
+
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+                Cushion cushion = plugin.getEntityManager().getCushion(UUID.fromString(cushionUuidStr));
+                sitDisplay.remove();
+                if (cushion != null && cushion.getInteraction() != null) {
+                    Utils.removeData(cushion.getInteraction(), "sit_player");
+                }
+            }
+        }.runTaskLater(plugin, 1L);
     }
 
     private Location getSpawnLocation(Player player, Block block, BlockFace face) {

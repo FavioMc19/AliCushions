@@ -63,7 +63,7 @@ public class EntityManager {
             if (id != null) {
                 cushion.getDisplays().put(id, display);
             } else {
-                cushion.setSitDisplay(display);
+                display.remove();
             }
         }
     }

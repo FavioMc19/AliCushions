@@ -9,6 +9,7 @@ import net.nexarys.alicushions.managers.EntityManager;
 import net.nexarys.alicushions.utils.Utils;
 import org.bukkit.Location;
 import org.bukkit.Sound;
+import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Interaction;
 import org.bukkit.entity.ItemDisplay;
 import org.bukkit.entity.Player;
@@ -28,7 +29,6 @@ public class Cushion {
     private List<UUID> displaysUUID = new ArrayList<>();
     private Map<Integer, ItemDisplay> displays = new HashMap<>();
     private Interaction interaction;
-    private ItemDisplay sitDisplay;
 
     public Cushion(UUID uuid, Location baseLocation, Location location, String color, UUID owner) {
         this.uuid = uuid;
@@ -38,11 +38,24 @@ public class Cushion {
         this.owner = owner;
     }
 
-    public void spawn() {
+    public void spawn(Player player) {
         AliCushions.getInstance().getEntityManager().getCushions().put(uuid, this);
         CushionTexture texture = plugin.getTextureGenerator().getTextures().get(color.toLowerCase());
 
         if (texture == null) return;
+
+        BlockFace facing = player.getFacing();
+
+        float yaw = switch (facing) {
+            case WEST  -> 90f;
+            case NORTH -> 180f;
+            case EAST  -> 270f;
+            default -> 0f;
+        };
+
+        double rad = Math.toRadians(yaw);
+        double cos = Math.cos(rad);
+        double sin = Math.sin(rad);
 
         float shrink = 0.001f;
         float scale = 1f - shrink;
@@ -55,11 +68,14 @@ public class Cushion {
         };
 
         for (int i = 0; i < 4; i++) {
-            double offsetX = offsets[i][0];
-            double offsetZ = offsets[i][1];
+            double baseOffsetX = offsets[i][0];
+            double baseOffsetZ = offsets[i][1];
 
-            Location spawnLocation = location.clone().add(offsetX, 0, offsetZ).add(.5, 0.249, .5);
-            spawnLocation.setYaw(0);
+            double rotatedX = baseOffsetX * cos - baseOffsetZ * sin;
+            double rotatedZ = baseOffsetX * sin + baseOffsetZ * cos;
+
+            Location spawnLocation = location.clone().add(rotatedX, 0, rotatedZ).add(.5, 0.249, .5);
+            spawnLocation.setYaw(yaw);
             spawnLocation.setPitch(0);
 
             int finalI = i;
@@ -83,10 +99,6 @@ public class Cushion {
             interactionUUID = entity.getUniqueId();
         });
 
-        this.sitDisplay = location.getWorld().spawn(location.clone().add(0.5, 0.25, 0.5),  ItemDisplay.class, entity -> {
-            Utils.setData(entity, EntityManager.CUSHION_KEY, uuid.toString());
-        });
-
         location.getWorld().playSound(location, Sound.BLOCK_POWDER_SNOW_PLACE, 0.5f, 0.9f);
         AliCushions.getInstance().getConfigManager().saveCushion(this);
     }
@@ -94,10 +106,6 @@ public class Cushion {
     public void remove() {
         if (interaction != null) {
             interaction.remove();
-        }
-
-        if (sitDisplay != null) {
-            sitDisplay.remove();
         }
 
         displays.values().forEach(ItemDisplay::remove);
@@ -118,7 +126,6 @@ public class Cushion {
         json.addProperty("color", color);
         json.addProperty("owner", owner.toString());
         json.addProperty("interactionUUID", interactionUUID.toString());
-        json.addProperty("sitDisplayUUID", sitDisplay.getUniqueId().toString());
 
         JsonArray displays = new JsonArray();
         for (UUID uuid : displaysUUID) {

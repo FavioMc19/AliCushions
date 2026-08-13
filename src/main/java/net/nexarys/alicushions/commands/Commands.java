@@ -45,7 +45,7 @@ public class Commands implements CommandExecutor, TabCompleter {
             if (!cushionTexture.isGenerated()) return true;
 
             Cushion cushion = new Cushion(UUID.randomUUID(), location, location, "test", player.getUniqueId());
-            cushion.spawn();
+            cushion.spawn(player);
             player.sendMessage("yap");
             return true;
         }
