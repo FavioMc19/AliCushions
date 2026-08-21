@@ -1,10 +1,12 @@
 package net.nexarys.alicushions.listeners;
 
 import net.nexarys.alicushions.AliCushions;
+import net.nexarys.alicushions.enums.CushionOrientation;
 import net.nexarys.alicushions.managers.EntityManager;
 import net.nexarys.alicushions.objects.Cushion;
 import net.nexarys.alicushions.objects.CushionTexture;
 import net.nexarys.alicushions.objects.NekoItem;
+import net.nexarys.alicushions.objects.SpawnResult;
 import net.nexarys.alicushions.utils.Utils;
 import org.bukkit.*;
 import org.bukkit.block.Block;
@@ -57,6 +59,7 @@ public class PlayerListener implements Listener {
         if (cushion == null) return;
 
         if (Utils.containsData(interaction, "sit_player", PersistentDataType.STRING)) return;
+        if (!plugin.getConfigManager().WALL_CUSHIONS_SITTABLE && cushion.getOrientation() == CushionOrientation.WALL) return;
 
         Player player = event.getPlayer();
         ItemDisplay sitDisplay = cushion.getLocation().getWorld().spawn(
@@ -120,20 +123,23 @@ public class PlayerListener implements Listener {
         String color = Utils.getCushionColor(itemStack);
         if (color == null) return;
 
-        Location spawnLocation = getSpawnLocation(player, block, event.getBlockFace());
+        SpawnResult spawnResult = getSpawnLocation(player, block, event.getBlockFace());
+        event.setCancelled(true);
+        if (spawnResult == null) return;
+        Location spawnLocation = spawnResult.location();
+        CushionOrientation orientation = spawnResult.orientation();
+
         if (spawnLocation == null) return;
-        Cushion cushion = new Cushion(UUID.randomUUID(), spawnLocation.getBlock().getRelative(BlockFace.DOWN).getLocation(), spawnLocation, color.toLowerCase(), player.getUniqueId());
+        Cushion cushion = new Cushion(UUID.randomUUID(), spawnLocation.getBlock().getRelative(BlockFace.DOWN).getLocation(), spawnLocation, color.toLowerCase(), player.getUniqueId(), orientation, spawnResult.facing());
         CushionTexture texture = plugin.getTextureGenerator().getTextures().get(cushion.getColor());
 
         if (texture == null) {
             player.sendMessage(Utils.color("&7[&cError&7]&c Texture is null."));
-            event.setCancelled(true);
             return;
         }
 
         if (!texture.isGenerated()) {
             player.sendMessage(Utils.color("&7[&cError&7]&e generating textures..."));
-            event.setCancelled(true);
             return;
         }
 
@@ -145,9 +151,7 @@ public class PlayerListener implements Listener {
             }
         }
 
-        cushion.spawn(player);
-
-        event.setCancelled(true);
+        cushion.spawn();
 
         String itemName = Utils.getDataString(itemStack, "item_name");
         if (itemName == null) itemName = "yellow";
@@ -194,38 +198,58 @@ public class PlayerListener implements Listener {
         }.runTaskLater(plugin, 1L);
     }
 
-    private Location getSpawnLocation(Player player, Block block, BlockFace face) {
-        if (face == BlockFace.DOWN) {
-            return null;
-        }
+    private SpawnResult getSpawnLocation(Player player, Block block, BlockFace face) {
+        if (face == BlockFace.DOWN) return null;
 
+        if (face == BlockFace.UP)
+            return getTopSpawnLocation(player, block);
+
+        if (!plugin.getConfigManager().WALL_CUSHIONS_ENABLED) return null;
+
+        return getSideSpawnLocation(player, block, face);
+    }
+
+    private SpawnResult getTopSpawnLocation(Player player, Block block) {
         VoxelShape collisionShape = block.getCollisionShape();
         Collection<BoundingBox> boundingBoxes = collisionShape.getBoundingBoxes();
 
-        if (face == BlockFace.UP && boundingBoxes.size() == 1) {
+        if (boundingBoxes.size() == 1) {
             Location location = block.getLocation();
-            return new Location(location.getWorld(), location.getBlockX(), getTopSurfaceY(block), location.getBlockZ());
+            Location spawnLocation = new Location(location.getWorld(), location.getBlockX(), getTopSurfaceY(block), location.getBlockZ());
+            return new SpawnResult(spawnLocation, CushionOrientation.FLOOR, player.getFacing());
         }
 
-        if (face == BlockFace.UP) {
-            RayTraceResult result = player.rayTraceBlocks(6, FluidCollisionMode.NEVER);
-            if (result != null) {
-                Vector hitPosition = result.getHitPosition();
-                double hitY = hitPosition.getY() - block.getY();
+        RayTraceResult result = player.rayTraceBlocks(6, FluidCollisionMode.NEVER);
+        if (result == null) return null;
 
-                Location location = block.getLocation();
-                return new Location(location.getWorld(), location.getBlockX(), location.getBlockY() + hitY, location.getBlockZ());
-            }
+        Vector hitPosition = result.getHitPosition();
+        double hitY = hitPosition.getY() - block.getY();
+
+        Location location = block.getLocation();
+        Location spawnLocation = new Location(location.getWorld(), location.getBlockX(), location.getBlockY() + hitY, location.getBlockZ());
+        return new SpawnResult(spawnLocation, CushionOrientation.FLOOR, player.getFacing());
+    }
+
+    private SpawnResult getSideSpawnLocation(Player player, Block block, BlockFace face) {
+        RayTraceResult result = player.rayTraceBlocks(6, FluidCollisionMode.NEVER);
+        if (result == null) return null;
+
+        Vector hitPosition = result.getHitPosition();
+
+        double x;
+        double y = block.getY();
+        double z;
+
+        if (face.getModX() != 0) {
+            x = hitPosition.getX() + (face == BlockFace.WEST ? -1 : 0);
+            z = block.getZ();
+        } else {
+            x = block.getX();
+            z = hitPosition.getZ() + (face == BlockFace.NORTH ? -1 : 0);
         }
 
-        Block sideBlock = block.getRelative(face);
-        if (!sideBlock.getType().isAir()) return null;
-
-        Block belowSide = sideBlock.getRelative(BlockFace.DOWN);
-        if (belowSide.getType().isAir()) return null;
-
-        Location belowLocation = belowSide.getLocation();
-        return new Location(belowLocation.getWorld(), belowLocation.getBlockX(), getTopSurfaceY(belowSide), belowLocation.getBlockZ());
+        Location spawnLocation = new Location(block.getWorld(), x, y, z);
+        return new SpawnResult(spawnLocation, CushionOrientation.WALL, face);
     }
 
     private double getTopSurfaceY(Block block) {

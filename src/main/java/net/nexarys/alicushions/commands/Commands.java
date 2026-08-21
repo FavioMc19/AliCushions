@@ -1,6 +1,7 @@
 package net.nexarys.alicushions.commands;
 
 import net.nexarys.alicushions.AliCushions;
+import net.nexarys.alicushions.enums.CushionOrientation;
 import net.nexarys.alicushions.objects.Cushion;
 import net.nexarys.alicushions.objects.CushionTexture;
 import net.nexarys.alicushions.objects.HeadTexture;
@@ -9,6 +10,7 @@ import net.nexarys.alicushions.utils.Utils;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.NamespacedKey;
+import org.bukkit.block.BlockFace;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -44,8 +46,8 @@ public class Commands implements CommandExecutor, TabCompleter {
 
             if (!cushionTexture.isGenerated()) return true;
 
-            Cushion cushion = new Cushion(UUID.randomUUID(), location, location, "test", player.getUniqueId());
-            cushion.spawn(player);
+            Cushion cushion = new Cushion(UUID.randomUUID(), location, location, "test", player.getUniqueId(), CushionOrientation.FLOOR, BlockFace.UP);
+            cushion.spawn();
             player.sendMessage("yap");
             return true;
         }

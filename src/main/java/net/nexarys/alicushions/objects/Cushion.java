@@ -5,6 +5,7 @@ import com.google.gson.JsonObject;
 import lombok.Getter;
 import lombok.Setter;
 import net.nexarys.alicushions.AliCushions;
+import net.nexarys.alicushions.enums.CushionOrientation;
 import net.nexarys.alicushions.managers.EntityManager;
 import net.nexarys.alicushions.utils.Utils;
 import org.bukkit.Location;
@@ -29,29 +30,40 @@ public class Cushion {
     private List<UUID> displaysUUID = new ArrayList<>();
     private Map<Integer, ItemDisplay> displays = new HashMap<>();
     private Interaction interaction;
+    private CushionOrientation orientation;
+    private BlockFace facing;
 
-    public Cushion(UUID uuid, Location baseLocation, Location location, String color, UUID owner) {
+    public Cushion(UUID uuid, Location baseLocation, Location location, String color, UUID owner, CushionOrientation orientation, BlockFace facing) {
         this.uuid = uuid;
         this.baseLocation = baseLocation;
         this.location = location;
         this.color = color;
         this.owner = owner;
+        this.orientation = orientation;
+        this.facing = facing;
     }
 
-    public void spawn(Player player) {
+    public void spawn() {
         AliCushions.getInstance().getEntityManager().getCushions().put(uuid, this);
         CushionTexture texture = plugin.getTextureGenerator().getTextures().get(color.toLowerCase());
 
         if (texture == null) return;
 
-        BlockFace facing = player.getFacing();
+        if (orientation == CushionOrientation.WALL) {
+            spawnWallHeads(texture);
+        } else {
+            spawnFloorHeads(texture);
+        }
 
-        float yaw = switch (facing) {
-            case WEST  -> 90f;
-            case NORTH -> 180f;
-            case EAST  -> 270f;
-            default -> 0f;
-        };
+        spawnInteraction();
+
+        location.getWorld().playSound(location, Sound.BLOCK_POWDER_SNOW_PLACE, 0.5f, 0.9f);
+        AliCushions.getInstance().getConfigManager().saveCushion(this);
+    }
+
+    private void spawnFloorHeads(CushionTexture texture) {
+
+        float yaw = getYaw();
 
         double rad = Math.toRadians(yaw);
         double cos = Math.cos(rad);
@@ -91,16 +103,83 @@ public class Cushion {
             displays.put(i, display);
             displaysUUID.add(display.getUniqueId());
         }
+    }
 
-        this.interaction = location.getWorld().spawn(location.clone().add(0.5, 0, 0.5), Interaction.class, entity -> {
-            entity.setInteractionHeight(0.25f);
-            entity.setInteractionWidth(1);
+    private void spawnWallHeads(CushionTexture texture) {
+        BlockFace wallFacing = facing.getOppositeFace();
+
+        float yaw = switch (wallFacing) {
+            case WEST  -> 90f;
+            case NORTH -> 180f;
+            case EAST  -> 270f;
+            default    -> 0f;
+        };
+
+        double rad = Math.toRadians(yaw);
+        double cos = Math.cos(rad);
+        double sin = Math.sin(rad);
+
+        float shrink = 0.001f;
+        float scale = 1f - shrink;
+
+        double pushInX = wallFacing.getModX() * 0.25;
+        double pushInZ = wallFacing.getModZ() * 0.25;
+
+        double[][] wallOffsets = {
+                {  0.25 * scale,  0.25 * scale },
+                {  0.25 * scale, -0.25 * scale },
+                { -0.25 * scale, -0.25 * scale },
+                { -0.25 * scale,  0.25 * scale }
+        };
+
+        for (int i = 0; i < 4; i++) {
+            double localX = wallOffsets[i][0];
+            double localY = wallOffsets[i][1];
+
+            double rotatedX = localX * cos;
+            double rotatedZ = localX * sin;
+
+            Location spawnLocation = location.clone().add(
+                    0.5 + rotatedX + pushInX,
+                    0.5 + localY,
+                    0.5 + rotatedZ + pushInZ
+            );
+
+            spawnLocation.setYaw(yaw);
+            spawnLocation.setPitch(-90f);
+
+            int finalI = i;
+            ItemDisplay display = location.getWorld().spawn(spawnLocation, ItemDisplay.class, entity -> {
+                entity.setItemStack(Utils.getHeadFromURLDirect(texture.getHeadById(finalI)));
+                Transformation transformation = entity.getTransformation();
+                transformation.getScale().set(scale, 0.5f, scale);
+                entity.setTransformation(transformation);
+                Utils.setData(entity, EntityManager.CUSHION_KEY, uuid.toString());
+                Utils.setData(entity, "CUSHION_ID", finalI);
+            });
+
+            displays.put(i, display);
+            displaysUUID.add(display.getUniqueId());
+        }
+    }
+
+    private void spawnInteraction() {
+        Location interactionLocation = location.clone().add(0.5, 0, 0.5);
+
+        if (orientation == CushionOrientation.WALL) {
+            BlockFace wallFacing = facing.getOppositeFace();
+            double offsetX = wallFacing.getModX() * 0.75;
+            double offsetZ = wallFacing.getModZ() * 0.75;
+            interactionLocation.add(offsetX, 0, offsetZ);
+        }
+
+        this.interaction = location.getWorld().spawn(interactionLocation, Interaction.class, entity -> {
+            entity.setInteractionHeight(orientation == CushionOrientation.WALL ? 0.98f : 0.25f);
+            entity.setInteractionWidth(orientation == CushionOrientation.WALL ? 0.98f : 1.0f);
             Utils.setData(entity, EntityManager.CUSHION_KEY, uuid.toString());
             interactionUUID = entity.getUniqueId();
+            entity.setRotation(orientation == CushionOrientation.WALL ? getYaw() : 0, 0);
         });
-
-        location.getWorld().playSound(location, Sound.BLOCK_POWDER_SNOW_PLACE, 0.5f, 0.9f);
-        AliCushions.getInstance().getConfigManager().saveCushion(this);
     }
 
     public void remove() {
@@ -126,6 +205,10 @@ public class Cushion {
         json.addProperty("color", color);
         json.addProperty("owner", owner.toString());
         json.addProperty("interactionUUID", interactionUUID.toString());
+        json.addProperty("orientation", orientation.name());
+        if (facing != null) {
+            json.addProperty("facing", facing.name());
+        }
 
         JsonArray displays = new JsonArray();
         for (UUID uuid : displaysUUID) {
@@ -141,8 +224,10 @@ public class Cushion {
         String color = json.get("color").getAsString();
         UUID owner = UUID.fromString(json.get("owner").getAsString());
         UUID uuid = UUID.fromString(json.get("uuid").getAsString());
+        CushionOrientation orientation = json.has("orientation") ? CushionOrientation.valueOf(json.get("orientation").getAsString()) : CushionOrientation.FLOOR;
+        BlockFace facing = json.has("facing") ? BlockFace.valueOf(json.get("facing").getAsString()) : null;
 
-        Cushion cushion = new Cushion(uuid, baseLocation, location, color, owner);
+        Cushion cushion = new Cushion(uuid, baseLocation, location, color, owner, orientation, facing);
 
         if (json.has("interactionUUID") && !json.get("interactionUUID").isJsonNull()) {
             cushion.setInteractionUUID(UUID.fromString(json.get("interactionUUID").getAsString()));
@@ -156,5 +241,14 @@ public class Cushion {
         cushion.setDisplaysUUID(displaysUUID);
 
         return cushion;
+    }
+
+    private float getYaw(){
+        return switch (facing) {
+            case WEST  -> 90f;
+            case NORTH -> 180f;
+            case EAST  -> 270f;
+            default    -> 0f;
+        };
     }
 }

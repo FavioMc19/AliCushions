@@ -32,11 +32,6 @@ public class TextureGenerator {
         config.update();
     }
 
-    private void debug(String message) {
-        Bukkit.broadcastMessage(message);
-        plugin.getLogger().info(message);
-    }
-
     public void checkAndGenerateCushions() {
         File folder =  new File(plugin.getDataFolder() + "/cushions/");
         if (!folder.exists()) folder.mkdir();

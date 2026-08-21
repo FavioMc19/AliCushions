@@ -1,6 +1,5 @@
 package net.nexarys.alicushions.managers;
 
-import com.google.common.base.Strings;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import net.nexarys.alicushions.AliCushions;
@@ -10,9 +9,7 @@ import net.nexarys.alicushions.objects.CushionTexture;
 import net.nexarys.alicushions.objects.NekoItem;
 import net.nexarys.alicushions.utils.NekoConfig;
 import net.nexarys.alicushions.utils.Utils;
-import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
-import org.jsoup.internal.StringUtil;
 
 import java.io.File;
 import java.io.InputStream;
@@ -20,22 +17,20 @@ import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.Enumeration;
 import java.util.List;
-import java.util.Objects;
 import java.util.UUID;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
 public class ConfigManager {
-    public static boolean UPDATE_CHECKER = true;
     private final AliCushions plugin = AliCushions.getInstance();
+
+    public static boolean UPDATE_CHECKER = true;
+    public boolean WALL_CUSHIONS_ENABLED = false;
+    public boolean WALL_CUSHIONS_SITTABLE = false;
 
     private NekoConfig config;
     private NekoConfig cushions;
     private NekoConfig items;
-
-    public ConfigManager() {
-
-    }
 
     public void loadConfig() {
         config = new NekoConfig("config.yml", plugin);
@@ -65,6 +60,8 @@ public class ConfigManager {
         }
 
         UPDATE_CHECKER = config.getBoolean("update_checker", true);
+        WALL_CUSHIONS_ENABLED = config.getBoolean("wall_cushions.enabled", false);
+        WALL_CUSHIONS_SITTABLE = config.getBoolean("wall_cushions.sittable", false);
 
         cushions.update();
         config.update();

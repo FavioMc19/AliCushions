@@ -1,2 +1,8 @@
 #Send a message in the console and to admins when a new update is available
 update_checker: true
+
+#Allow cushions to be placed on walls (vertical surfaces)
+wall_cushions:
+  enabled: false
+  #Allow players to sit on wall-placed cushions
+  sittable: false
